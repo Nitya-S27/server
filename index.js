@@ -1,6 +1,5 @@
 // importing packages using type "module"
 import express from "express";
-import serverless from "serverless-http";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import userRoute from "./routes/user.js";
@@ -16,7 +15,7 @@ dotenv.config();
 
 // create app
 const app = express();
-
+const router = express.Router();
 // Connect with mongoDB cluster
 mongoose
   .connect(process.env.MONGODB_CONNECTION_STRING, {
@@ -32,10 +31,13 @@ mongoose
 
 // CREATE THE REST API ROUTES
 // It is not a good practice to write the requests for all the routes in one file so we create a seperate file for routes
-
+router.get("/", (req, res) => {
+  res.send("Connected!");
+});
 // Import the route function and use it
 app.use(cors());
 app.use(express.json());
+app.use("/", router);
 app.use("/api/users", userRoute);
 app.use("/api/auth", authRoute);
 app.use("/api/products", productRoute);
