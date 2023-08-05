@@ -22,7 +22,7 @@ router.post("/register", async (req, res) => {
     const savedUser = await newUser.save();
     res.status(201).json(savedUser);
   } catch (err) {
-    res.status(500).json(err);
+    res.status(500).json("User already exists");
   }
 });
 
@@ -32,8 +32,8 @@ router.post("/login", async (req, res) => {
   try {
     // Check for user existence
     const foundUser = await UserModel.findOne({ username: req.body.username });
-    !foundUser && res.status(401).json("Wrong Credentials");
-
+    // !foundUser && res.status(401).json("Wrong Credentials");
+    
     // Check for password equality
     const decryptedPassword = CryptoJS.AES.decrypt(
       foundUser.password,
@@ -41,24 +41,25 @@ router.post("/login", async (req, res) => {
     );
     const orignalPassword = decryptedPassword.toString(CryptoJS.enc.Utf8);
     const enteredPassword = req.body.password;
-    orignalPassword !== enteredPassword &&
+    if (!foundUser || orignalPassword !== enteredPassword) {
       res.status(401).json("Wrong Credentials");
+    } else {
+      // Generate JWT token
+      const accessToken = jwt.sign(
+        {
+          id: foundUser._id,
+          isAdmin: foundUser.isAdmin,
+        },
+        process.env.JWT_KEY,
+        { expiresIn: "2d" }
+      );
 
-    // Generate JWT Accesstoken
-    const accessToken = jwt.sign(
-      {
-        id: foundUser._id,
-        isAdmin: foundUser.isAdmin,
-      },
-      process.env.JWT_KEY,
-      { expiresIn: "2d" }
-    );
-
-    // Return success if all good
-    const { password, ...others } = foundUser._doc; // we will not send password along with the data
-    res.status(200).json({ ...others, accessToken });
+      // Return success if all good
+      const { password, ...others } = foundUser._doc; // we will not send password along with the data
+      res.status(200).json({ ...others, accessToken });
+    }
   } catch (error) {
-    res.status(500).json(error);
+    res.status(500).json("Wrong Credentials!");
   }
 });
 
