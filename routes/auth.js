@@ -33,7 +33,7 @@ router.post("/login", async (req, res) => {
     // Check for user existence
     const foundUser = await UserModel.findOne({ username: req.body.username });
     // !foundUser && res.status(401).json("Wrong Credentials");
-    
+
     // Check for password equality
     const decryptedPassword = CryptoJS.AES.decrypt(
       foundUser.password,
@@ -42,7 +42,7 @@ router.post("/login", async (req, res) => {
     const orignalPassword = decryptedPassword.toString(CryptoJS.enc.Utf8);
     const enteredPassword = req.body.password;
     if (!foundUser || orignalPassword !== enteredPassword) {
-      res.status(401).json("Wrong Credentials");
+      return res.status(401).json("Wrong Credentials");
     } else {
       // Generate JWT token
       const accessToken = jwt.sign(
@@ -53,6 +53,7 @@ router.post("/login", async (req, res) => {
         process.env.JWT_KEY,
         { expiresIn: "2d" }
       );
+      // res.setHeader("token", `Bearer ${accessToken}`);
 
       // Return success if all good
       const { password, ...others } = foundUser._doc; // we will not send password along with the data
