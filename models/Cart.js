@@ -7,6 +7,11 @@ const CartSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+    username: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     products: [
       {
         productID: {
@@ -17,10 +22,10 @@ const CartSchema = new mongoose.Schema(
           default: 1,
         },
         color: {
-          type: Array,
+          type: String,
         },
         size: {
-          type: Array,
+          type: String,
         },
       },
     ],
